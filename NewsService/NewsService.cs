@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,55 @@ namespace NewsService
 {
     public class NewsService:INewsService
     {
+
+        public bool uploadImage(byte[] imagedata, string imagename)
+        {
+            bool isSuccess = false;
+            FileStream fileStream = null;
+            //Get the file upload path store in web services web.config file.  
+            string strTempFolderPath = "Images/";  // System.Configuration.ConfigurationManager.AppSettings.Get("FileUploadPath");
+            try
+            {
+
+                if (!string.IsNullOrEmpty(strTempFolderPath))
+                {
+                    if (!string.IsNullOrEmpty(imagename))
+                    {
+                        string strFileFullPath = strTempFolderPath + imagename;
+                        fileStream = new FileStream(strFileFullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                        // write file stream into the specified file  
+                        using (System.IO.FileStream fs = fileStream)
+                        {
+                            fs.Write(imagedata, 0, imagedata.Length);
+                            isSuccess = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+
+            }
+
+            return isSuccess;
+        }
+
+        public byte[] getImage(string imagename)
+        {
+            byte[] filedetails = new byte[0];
+            //string strTempFolderPath = System.Configuration.ConfigurationManager.AppSettings.Get("FileUploadPath");
+            string strTempFolderPath = "Images/";
+            if (File.Exists(strTempFolderPath + imagename))
+            {
+                return File.ReadAllBytes(strTempFolderPath + imagename);
+            }
+            else return filedetails;
+        }
+
+        //==============================================================================
+
         public List<News> getAllNews(
             int? authorId = null,
             string tag = null,
@@ -42,12 +92,14 @@ namespace NewsService
                     n1.tag = n.tag;
                     n1.newsCity = n.newsCity;
                     n1.image = n.image;
+                    n1.imagedata = getImage(n.image);
 
                     n1.author = new Author();
                     n1.author.authorId = n.author.authorId;
                     n1.author.authorName = n.author.authorName;
                     n1.author.authorImage = n.author.authorImage;
                     n1.author.authorCity = n.author.authorCity;
+                    n1.author.imagedata = getImage(n.author.authorImage);
                     result.Add(n1);
                 }
                 return result;
@@ -56,7 +108,7 @@ namespace NewsService
             
         }
 
-        public int addNews(News n)
+        public int addNews(News n, byte[] imagedata)
         {
             using (var ctx = new Models.Model())
             {
@@ -67,6 +119,8 @@ namespace NewsService
                 n1.tag = n.tag;
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
+
+                bool flag = uploadImage(imagedata,n.image);
 
                 Models.Author a = ctx.authors.FirstOrDefault(x => x.authorId == n.author.authorId);
                 n1.author = a;
@@ -89,12 +143,14 @@ namespace NewsService
                 n1.tag = n.tag;
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
+                n1.imagedata = getImage(n.image);
 
                 n1.author = new Author();
                 n1.author.authorId = n.author.authorId;
                 n1.author.authorName = n.author.authorName;
                 n1.author.authorImage = n.author.authorImage;
                 n1.author.authorCity = n.author.authorCity;
+                n1.author.imagedata = getImage(n.author.authorImage);
                 return n1;
             }
         }
@@ -108,7 +164,7 @@ namespace NewsService
             }
         }
 
-        public News updateNews(News n)
+        public News updateNews(News n , byte[] imagedata)
         {
             using (var ctx = new Models.Model())
             {
@@ -119,6 +175,8 @@ namespace NewsService
                 n1.tag = n.tag;
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
+                bool flag = uploadImage(imagedata, n.image);
+
                 ctx.SaveChanges();
                 return n;
             }
@@ -126,14 +184,33 @@ namespace NewsService
 
 
         /*======================================================================*/
-        public int addAuthor(Author a)
+
+        public Author Login(string authorname, string password)
+        {
+            using (var ctx = new Models.Model())
+            {
+                Models.Author a = ctx.authors.FirstOrDefault(x => x.authorName == authorname && x.password == password);
+                Author a1 = new Author();
+                a1.authorId = a.authorId;
+                a1.authorName = a.authorName;
+                a1.authorImage = a.authorImage;
+                a1.authorCity = a.authorCity;
+                a1.imagedata = getImage(a.authorImage);
+
+                return a1;
+            }
+        }
+
+        public int addAuthor(Author a, byte[] imagedata)
         {
             using (var ctx = new Models.Model())
             {
                 Models.Author a1 = new Models.Author();
                 a1.authorName = a.authorName;
+                a1.password = a.password;
                 a1.authorImage = a.authorImage;
                 a1.authorCity = a.authorCity;
+                bool flag = uploadImage(imagedata, a.authorImage);
                 ctx.authors.Add(a1);
                 ctx.SaveChanges();
                 return a1.authorId;
@@ -154,6 +231,7 @@ namespace NewsService
                     a1.authorName = a.authorName;
                     a1.authorImage = a.authorImage;
                     a1.authorCity = a.authorCity;
+                    a1.imagedata = getImage(a.authorImage);
                     result.Add(a1);
                 }
                 return result;
@@ -170,6 +248,7 @@ namespace NewsService
                 a1.authorId = a.authorId;
                 a1.authorName = a.authorName;
                 a1.authorImage = a.authorImage;
+                a1.imagedata = getImage(a.authorImage);
                 a1.authorCity = a.authorCity;
                 return a1;
             }
@@ -184,7 +263,7 @@ namespace NewsService
             }
         }
 
-        public Author updateAuthor(Author a)
+        public Author updateAuthor(Author a, byte[] imagedata)
         {
             using (var ctx = new Models.Model())
             {
@@ -193,6 +272,7 @@ namespace NewsService
                 a1.authorName = a.authorName;
                 a1.authorImage = a.authorImage;
                 a1.authorCity = a.authorCity;
+                bool flag = uploadImage(imagedata, a.authorImage);
                 ctx.SaveChanges();
                 return a;
             }

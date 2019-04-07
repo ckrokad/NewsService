@@ -13,6 +13,12 @@ namespace NewsService
     public interface INewsService
     {
         [OperationContract]
+        bool uploadImage(byte[] imagedata, string imagename);
+
+        [OperationContract]
+        byte[] getImage(string imagename);
+
+        [OperationContract]
         List<News> getAllNews(
             int? authorId = null, 
             string tag = null,
@@ -22,29 +28,32 @@ namespace NewsService
         News getNews(int id);
 
         [OperationContract]
-        int addNews(News news);
+        int addNews(News news, byte[] imagedata);
 
         [OperationContract]
         void removeNews(int id);
 
         [OperationContract]
-        News updateNews(News news);
+        News updateNews(News news, byte[] imagedata);
 
         /*===============================*/
         [OperationContract]
         List<Author> getAllAuthor();
 
         [OperationContract]
+        Author Login(string authorname, string password);
+
+        [OperationContract]
         Author getAuthor(int id);
         
         [OperationContract]
-        int addAuthor(Author author);
+        int addAuthor(Author author, byte[] imagedata);
 
         [OperationContract]
         void removeAuthor(int id);
 
         [OperationContract]
-        Author updateAuthor(Author author);
+        Author updateAuthor(Author author, byte[] imagedata);
 
     }
     [DataContract]
@@ -58,6 +67,8 @@ namespace NewsService
         public string description { get; set; }
         [DataMember]
         public string image { get; set; }
+        [DataMember]
+        public byte[] imagedata { get; set; }
         [DataMember]
         public string tag { get; set; }
         [DataMember]
@@ -79,6 +90,8 @@ namespace NewsService
         public string authorName { get; set; }
         [DataMember]
         public string authorImage { get; set; }
+        [DataMember]
+        public byte[] imagedata { get; set; }
         [DataMember]
         public string authorCity { get; set; }
        
