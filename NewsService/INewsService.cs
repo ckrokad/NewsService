@@ -28,13 +28,13 @@ namespace NewsService
         News getNews(int id);
 
         [OperationContract]
-        int addNews(News news, byte[] imagedata);
+        int addNews(News news);
 
         [OperationContract]
         void removeNews(int id);
 
         [OperationContract]
-        News updateNews(News news, byte[] imagedata);
+        News updateNews(News news);
 
         /*===============================*/
         [OperationContract]
@@ -47,13 +47,13 @@ namespace NewsService
         Author getAuthor(int id);
         
         [OperationContract]
-        int addAuthor(Author author, byte[] imagedata);
+        int addAuthor(Author author);
 
         [OperationContract]
         void removeAuthor(int id);
 
         [OperationContract]
-        Author updateAuthor(Author author, byte[] imagedata);
+        Author updateAuthor(Author author);
 
     }
     [DataContract]
@@ -94,6 +94,6 @@ namespace NewsService
         public byte[] imagedata { get; set; }
         [DataMember]
         public string authorCity { get; set; }
-       
+        
     }
 }

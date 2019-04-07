@@ -16,7 +16,7 @@ namespace NewsService
             bool isSuccess = false;
             FileStream fileStream = null;
             //Get the file upload path store in web services web.config file.  
-            string strTempFolderPath = "Images/";  // System.Configuration.ConfigurationManager.AppSettings.Get("FileUploadPath");
+            string strTempFolderPath = @"C:\Users\ckrokad\Desktop\SOC project\NEWS\NewsService\NewsService\Images\";  // System.Configuration.ConfigurationManager.AppSettings.Get("FileUploadPath");
             try
             {
 
@@ -49,7 +49,7 @@ namespace NewsService
         {
             byte[] filedetails = new byte[0];
             //string strTempFolderPath = System.Configuration.ConfigurationManager.AppSettings.Get("FileUploadPath");
-            string strTempFolderPath = "Images/";
+            string strTempFolderPath = @"C:\Users\ckrokad\Desktop\SOC project\NEWS\NewsService\NewsService\Images\";
             if (File.Exists(strTempFolderPath + imagename))
             {
                 return File.ReadAllBytes(strTempFolderPath + imagename);
@@ -99,6 +99,7 @@ namespace NewsService
                     n1.author.authorName = n.author.authorName;
                     n1.author.authorImage = n.author.authorImage;
                     n1.author.authorCity = n.author.authorCity;
+          
                     n1.author.imagedata = getImage(n.author.authorImage);
                     result.Add(n1);
                 }
@@ -108,7 +109,7 @@ namespace NewsService
             
         }
 
-        public int addNews(News n, byte[] imagedata)
+        public int addNews(News n)
         {
             using (var ctx = new Models.Model())
             {
@@ -120,7 +121,7 @@ namespace NewsService
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
 
-                bool flag = uploadImage(imagedata,n.image);
+                bool flag = uploadImage(n.imagedata,n.image);
 
                 Models.Author a = ctx.authors.FirstOrDefault(x => x.authorId == n.author.authorId);
                 n1.author = a;
@@ -164,7 +165,7 @@ namespace NewsService
             }
         }
 
-        public News updateNews(News n , byte[] imagedata)
+        public News updateNews(News n)
         {
             using (var ctx = new Models.Model())
             {
@@ -175,7 +176,7 @@ namespace NewsService
                 n1.tag = n.tag;
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
-                bool flag = uploadImage(imagedata, n.image);
+                bool flag = uploadImage(n.imagedata, n.image);
 
                 ctx.SaveChanges();
                 return n;
@@ -201,7 +202,7 @@ namespace NewsService
             }
         }
 
-        public int addAuthor(Author a, byte[] imagedata)
+        public int addAuthor(Author a)
         {
             using (var ctx = new Models.Model())
             {
@@ -210,7 +211,7 @@ namespace NewsService
                 a1.password = a.password;
                 a1.authorImage = a.authorImage;
                 a1.authorCity = a.authorCity;
-                bool flag = uploadImage(imagedata, a.authorImage);
+                bool flag = uploadImage(a.imagedata, a.authorImage);
                 ctx.authors.Add(a1);
                 ctx.SaveChanges();
                 return a1.authorId;
@@ -263,7 +264,7 @@ namespace NewsService
             }
         }
 
-        public Author updateAuthor(Author a, byte[] imagedata)
+        public Author updateAuthor(Author a)
         {
             using (var ctx = new Models.Model())
             {
@@ -272,7 +273,7 @@ namespace NewsService
                 a1.authorName = a.authorName;
                 a1.authorImage = a.authorImage;
                 a1.authorCity = a.authorCity;
-                bool flag = uploadImage(imagedata, a.authorImage);
+                bool flag = uploadImage(a.imagedata, a.authorImage);
                 ctx.SaveChanges();
                 return a;
             }
