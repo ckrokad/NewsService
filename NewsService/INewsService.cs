@@ -20,7 +20,7 @@ namespace NewsService
 
         [OperationContract]
         List<News> getAllNews(
-            int? authorId = null, 
+            int authorId = 0, 
             string tag = null,
             string newsCity = null);
 

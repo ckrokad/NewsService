@@ -61,18 +61,19 @@ namespace NewsService
         //==============================================================================
 
         public List<News> getAllNews(
-            int? authorId = null,
+            int authorId = 0,
             string tag = null,
             string newsCity = null)
         {
 
             using (var ctx = new Models.Model())
             {
-                var newslist = ctx.news.AsQueryable();
+                var newslist = ctx.news.AsEnumerable();
                 List<News> result = new List<News>();
                 try
                 {
-                    if (authorId != null)
+
+                    if (authorId != 0)
                     {
                         newslist = newslist.Where(x => x.author.authorId == authorId);
                     }
@@ -84,7 +85,7 @@ namespace NewsService
                     {
                         newslist = newslist.Where(x => x.newsCity == newsCity);
                     }
-                    foreach (var n in newslist)
+                    foreach (var n in newslist.ToList())
                     {
                         News n1 = new News();
                         n1.newsId = n.newsId;
