@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -67,41 +68,47 @@ namespace NewsService
 
             using (var ctx = new Models.Model())
             {
-                var newslist = ctx.news.AsParallel();
+                var newslist = ctx.news.AsQueryable();
                 List<News> result = new List<News>();
+                try
+                {
+                    if (authorId != null)
+                    {
+                        newslist = newslist.Where(x => x.author.authorId == authorId);
+                    }
+                    if (tag != null)
+                    {
+                        newslist = newslist.Where(x => x.tag == tag);
+                    }
+                    if (newsCity != null)
+                    {
+                        newslist = newslist.Where(x => x.newsCity == newsCity);
+                    }
+                    foreach (var n in newslist)
+                    {
+                        News n1 = new News();
+                        n1.newsId = n.newsId;
+                        n1.title = n.title;
+                        n1.description = n.description;
+                        n1.datetime = n.datetime;
+                        n1.tag = n.tag;
+                        n1.newsCity = n.newsCity;
+                        n1.image = n.image;
+                        n1.imagedata = getImage(n.image);
 
-                if (authorId != null)
-                {
-                    newslist = newslist.Where(x => x.author.authorId == authorId);
-                }
-                if(tag != null)
-                {
-                    newslist = newslist.Where(x => x.tag == tag);
-                }
-                if(newsCity != null)
-                {
-                    newslist = newslist.Where(x => x.newsCity == newsCity);
-                }
-                foreach (var n in newslist)
-                {
-                    News n1 = new News();
-                    n1.newsId = n.newsId;
-                    n1.title = n.title;
-                    n1.description = n.description;
-                    n1.datetime = n.datetime;
-                    n1.tag = n.tag;
-                    n1.newsCity = n.newsCity;
-                    n1.image = n.image;
-                    n1.imagedata = getImage(n.image);
+                        n1.author = new Author();
+                        n1.author.authorId = n.author.authorId;
+                        n1.author.authorName = n.author.authorName;
+                        n1.author.authorImage = n.author.authorImage;
+                        n1.author.authorCity = n.author.authorCity;
 
-                    n1.author = new Author();
-                    n1.author.authorId = n.author.authorId;
-                    n1.author.authorName = n.author.authorName;
-                    n1.author.authorImage = n.author.authorImage;
-                    n1.author.authorCity = n.author.authorCity;
-          
-                    n1.author.imagedata = getImage(n.author.authorImage);
-                    result.Add(n1);
+                        n1.author.imagedata = getImage(n.author.authorImage);
+                        result.Add(n1);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex);
                 }
                 return result;
 
@@ -116,7 +123,7 @@ namespace NewsService
                 Models.News n1 = new Models.News();
                 n1.title = n.title;
                 n1.description = n.description;
-                n1.datetime = n.datetime;
+                n1.datetime = DateTime.Now;
                 n1.tag = n.tag;
                 n1.newsCity = n.newsCity;
                 n1.image = n.image;
@@ -136,7 +143,9 @@ namespace NewsService
             using (var ctx = new Models.Model())
             {
                 Models.News n = ctx.news.FirstOrDefault(x => x.newsId == id);
+               
                 News n1 = new News();
+                
                 n1.newsId = n.newsId;
                 n1.title = n.title;
                 n1.description = n.description;
@@ -170,12 +179,33 @@ namespace NewsService
             using (var ctx = new Models.Model())
             {
                 Models.News n1 = ctx.news.FirstOrDefault(x => x.newsId == n.newsId);
-                n1.title = n.title;
-                n1.description = n.description;
-                n1.datetime = n.datetime;
-                n1.tag = n.tag;
-                n1.newsCity = n.newsCity;
-                n1.image = n.image;
+                if (n.title != null)
+                {
+                    n1.title = n.title;
+                }
+
+                if (n.description != null)
+                {
+                    n1.description = n.description;
+                }
+
+                
+                n1.datetime = DateTime.Now;
+
+                if (n.tag != null)
+                {
+                    n1.tag = n.tag;
+                }
+
+                if (n.newsCity != null)
+                {
+                    n1.newsCity = n.newsCity;
+                }
+
+                if (n.image != null)
+                {
+                    n1.image = n.image;
+                }
                 bool flag = uploadImage(n.imagedata, n.image);
 
                 ctx.SaveChanges();
@@ -190,14 +220,21 @@ namespace NewsService
         {
             using (var ctx = new Models.Model())
             {
-                Models.Author a = ctx.authors.FirstOrDefault(x => x.authorName == authorname && x.password == password);
-                Author a1 = new Author();
-                a1.authorId = a.authorId;
-                a1.authorName = a.authorName;
-                a1.authorImage = a.authorImage;
-                a1.authorCity = a.authorCity;
-                a1.imagedata = getImage(a.authorImage);
-
+                Author a1 = null;
+                try
+                {
+                    Models.Author a = ctx.authors.FirstOrDefault(x => x.authorName == authorname && x.password == password);
+                    a1 = new Author(); 
+                    a1.authorId = a.authorId;
+                    a1.authorName = a.authorName;
+                    a1.authorImage = a.authorImage;
+                    a1.authorCity = a.authorCity;
+                    a1.imagedata = getImage(a.authorImage);
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
                 return a1;
             }
         }
@@ -208,12 +245,14 @@ namespace NewsService
             {
                 Models.Author a1 = new Models.Author();
                 a1.authorName = a.authorName;
+
                 a1.password = a.password;
                 a1.authorImage = a.authorImage;
                 a1.authorCity = a.authorCity;
                 bool flag = uploadImage(a.imagedata, a.authorImage);
                 ctx.authors.Add(a1);
                 ctx.SaveChanges();
+                //System.Diagnostics.Debug.WriteLine("Author ID &&&&"+a1.authorId);
                 return a1.authorId;
             }
         }
@@ -270,9 +309,18 @@ namespace NewsService
             {
                 Models.Author a1 = ctx.authors.FirstOrDefault(x => x.authorId == a.authorId);
                 a1.authorId = a.authorId;
-                a1.authorName = a.authorName;
-                a1.authorImage = a.authorImage;
-                a1.authorCity = a.authorCity;
+                if (a.authorName != null)
+                {
+                    a1.authorName = a.authorName;
+                }
+                if (a.authorImage != null)
+                {
+                    a1.authorImage = a.authorImage;
+                }
+                if (a.authorCity != null)
+                {
+                    a1.authorCity = a.authorCity;
+                }
                 bool flag = uploadImage(a.imagedata, a.authorImage);
                 ctx.SaveChanges();
                 return a;
