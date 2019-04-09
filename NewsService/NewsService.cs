@@ -180,34 +180,28 @@ namespace NewsService
             using (var ctx = new Models.Model())
             {
                 Models.News n1 = ctx.news.FirstOrDefault(x => x.newsId == n.newsId);
-                if (n.title != null)
-                {
-                    n1.title = n.title;
-                }
-
-                if (n.description != null)
-                {
-                    n1.description = n.description;
-                }
-
+               
+                if(n.title != null)
+                  n1.title = n.title;
                 
-                n1.datetime = DateTime.Now;
+                if(n.description != null)              
+                  n1.description = n.description.ToString();
+                                              
+                  n1.datetime = DateTime.Now;
 
-                if (n.tag != null)
-                {
-                    n1.tag = n.tag;
-                }
+               if(n.tag != null)
+                  n1.tag = n.tag;
+                
+               if(n.newsCity != null)
+                  n1.newsCity = n.newsCity;
 
-                if (n.newsCity != null)
-                {
-                    n1.newsCity = n.newsCity;
-                }
 
                 if (n.image != null)
                 {
                     n1.image = n.image;
+                    bool flag = uploadImage(n.imagedata, n.image);
                 }
-                bool flag = uploadImage(n.imagedata, n.image);
+                
 
                 ctx.SaveChanges();
                 return n;
@@ -221,21 +215,18 @@ namespace NewsService
         {
             using (var ctx = new Models.Model())
             {
-                Author a1 = null;
-                try
-                {
-                    Models.Author a = ctx.authors.FirstOrDefault(x => x.authorName == authorname && x.password == password);
-                    a1 = new Author(); 
+                Author a1 = new Author();
+
+
+                Models.Author a = ctx.authors.FirstOrDefault(x => x.password == password && x.authorName == authorname);
+
                     a1.authorId = a.authorId;
                     a1.authorName = a.authorName;
                     a1.authorImage = a.authorImage;
                     a1.authorCity = a.authorCity;
                     a1.imagedata = getImage(a.authorImage);
-                }
-                catch(Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                }
+                
+                
                 return a1;
             }
         }
